@@ -9,9 +9,25 @@ const AnecdoteForm = () => {
 
 	const newAnecdoteMutation = useMutation({
 		mutationFn: createAnecdote,
+		onError: () => {
+			dispatch({
+				type: "SET",
+				payload: "too short anecdote, must have length 5 or more",
+			});
+			setTimeout(() => {
+				dispatch({ type: "CLEAR" });
+			}, 5000);
+		},
 		onSuccess: (newAnecdote) => {
 			const anecdotes = queryClient.getQueryData(["anecdotes"]);
 			queryClient.setQueryData(["anecdotes"], anecdotes.concat(newAnecdote));
+			dispatch({
+				type: "SET",
+				payload: `new anecdote ${newAnecdote.content} was created`,
+			});
+			setTimeout(() => {
+				dispatch({ type: "CLEAR" });
+			}, 5000);
 		},
 	});
 
@@ -20,10 +36,6 @@ const AnecdoteForm = () => {
 		const content = event.target.anecdote.value;
 		event.target.anecdote.value = "";
 		newAnecdoteMutation.mutate({ content, votes: 0 });
-		dispatch({ type: "SET", payload: `new anecdote ${content} was created` });
-		setTimeout(() => {
-			dispatch({ type: "CLEAR" });
-		}, 5000);
 	};
 
 	return (
